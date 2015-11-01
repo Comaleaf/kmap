@@ -35,7 +35,7 @@
 #
 
 labels = []
-rows = []
+rows   = []
 
 abort("Must specify arguments") unless ARGV.length > 0
 
