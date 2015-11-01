@@ -92,7 +92,7 @@ def consolidate(minterms)
 	# Returns a consolidated word, and the count of how many bits had to be changed to get it 
 	def combine_words(a, b)
 		count = 0
-		word = a.each_char.zip(b.each_char).map {|c| if c[0] != c[1] then count += 1; '-' else c[0] end}
+		word = a.chars.zip(b.chars).map {|c| if c[0] != c[1] then count += 1; '-' else c[0] end}
 		return word.join, count
 	end
 
