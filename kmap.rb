@@ -129,10 +129,7 @@ for minterm in minterms
 end
 
 # Remove essentials
-for minterm in minterms
-	# Skip minterms that have already been deleted
-	if not minterms.member? minterm then next end
-
+minterms.each do |minterm|
 	if implicants_for_minterm[minterm].length == 1 then
 		newly_covered_minterms = minterms_matched_by_implicant[implicants_for_minterm[minterm][0]]
 		essential_prime_implicants << implicants_for_minterm[minterm][0]
