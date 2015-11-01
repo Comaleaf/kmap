@@ -146,13 +146,12 @@ end
 
 while minterms.length > 0 do
 	# Keep finding the biggest implicant, then remove it and the minterms it covers and try next
-	biggest_implicant, _ = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
+	biggest_implicant, newly_covered_minterms = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
 
 	# Use this one
 	essential_prime_implicants << biggest_implicant
 
 	# Clear up implicant and terms covered by it
-	newly_covered_minterms = minterms_matched_by_implicant[biggest_implicant]
 	minterms -= newly_covered_minterms
 
 	minterms_matched_by_implicant.select! do |implicant, minterms|
