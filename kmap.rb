@@ -1,18 +1,59 @@
 #!/usr/bin/env ruby
 
+####################################################################################
+####################################################################################
+#
+# Karnaugh-Map Minimiser
+# @author Lauren Tomasello <lt696@york.ac.uk>
+#
+# Takes a karnaugh map representation of a digital logic design and uses the 
+# Quine-McCluskey algorithm to produce a minimised sum-of-products form of the
+# design.
+#
+# Example, k-map for function F that takes 4-inputs, ABCD:
+#
+#      F       [CD]
+#        \   00 01 11 10
+#          +------------
+#       00 | 0  0  0  0
+#  [AB] 01 | 1  0  0  0
+#       11 | 1  0  1  X
+#       10 | 1  X  1  1
+#
+#  Input the labels as the first argument, then each row as each successive
+#  argument
+#
+#  % ./kmap.rb ABCD 0000 1000 101X 1X11
+#  B!C!D + AC + A!D
+#
+####################################################################################
+####################################################################################
+
+####################################################################################
+#
+# Step 1: Take and validate input
+#
+
 labels = []
 rows = []
-minterms = []
-dontcares = []
 
-# Input and validate args
 abort("Must specify arguments") unless ARGV.length > 0
 
+# Labels seem fine
 labels = ARGV[0].split(//)
-abort("Labels must be unique") unless labels.uniq.length == labels.length
 
+abort("Labels must be unique")                  unless labels.uniq.length == labels.length
 abort("Column count does not match row length") unless (ARGV.length - 1) == ARGV[0].length
+
+# Rows seem fine
 rows = ARGV.drop(1).map {|r| r.upcase.split(//)}
+
+####################################################################################
+#
+# Step 2: Convert the Karnaugh Map to a Sum-of-Products for use with Quine-McCluskey
+#
+minterms  = []
+dontcares = []
 
 # Convert k-map representation to sum of products representation
 for row in 0...rows.length
@@ -38,7 +79,15 @@ for row in 0...rows.length
 	end
 end
 
-# Quine-McCluskey: first step, consolidate minterms into largest groups
+
+####################################################################################
+#
+# Step 3: Find the prime implicants of the minterms (the smallest number of literals that
+# can express each group of minterms)
+#
+
+# Returns an array of minterms where all minterms that changed by a single bit have been
+# consolidated into one minterm.
 def consolidate(minterms)
 	# Returns a consolidated word, and the count of how many bits had to be changed to get it 
 	def combine_words(a, b)
@@ -81,9 +130,14 @@ until (consolidate(prime_implicants) == prime_implicants) do
 	prime_implicants = consolidate(prime_implicants)
 end
 
-final_implicants = []
+final_implicants              = []
 minterms_matched_by_implicant = {}
-implicants_for_minterm = {}
+implicants_for_minterm        = {}
+
+####################################################################################
+#
+# Step 4: Build a prime implicant table, which is used to find essential prime implicants
+#
 
 # Build table of minterms matched by implicants, and find essential prime implicants
 for minterm in minterms
@@ -120,6 +174,7 @@ minterms.each do |minterm|
 	end
 end
 
+# Iteratively find the implicant that covers the most minterms and work on down until there are no minterms left
 while minterms.length > 0 do
 	# Keep finding the biggest implicant, then remove it and the minterms it covers and try next
 	implicant, terms = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
@@ -136,7 +191,13 @@ while minterms.length > 0 do
 	end
 end
 
-# Convert to sum-of-products representation
+####################################################################################
+#
+# Step 5: Convert the final array of essential prime implicants into an algebraic representation of
+# sum-of-products.
+#
+
+# Gives a product term from an implicant
 product_term = lambda do |term|
 	term.each_char.each_with_index.map do |c, i|
 		if c == "0" then
@@ -147,4 +208,5 @@ product_term = lambda do |term|
 	end.join
 end
 
+# Join the array of product terms around the + to make a sum-of-products
 puts final_implicants.uniq.map(&product_term).join(" + ")
