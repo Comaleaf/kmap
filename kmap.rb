@@ -3,10 +3,10 @@
 def binary_to_kmap_index(x, num_variables)
 	# (n >> 1) ^ n gives the greycode equivalent representation of a number
 	def greycode(n)
-		return (n >> 1) ^ n
+		(n >> 1) ^ n
 	end
 
-	# this is used within the rows/columns of a kmap as only one term changes with an adjacent cell
+	# This is used within the rows/columns of a kmap as only one term changes with an adjacent cell
 
 	col = x % num_variables # Index of column in kmap
 	row = x / num_variables # Index of row
@@ -44,12 +44,12 @@ rows = ARGV.drop(1).map {|r| r.upcase.split(//)}
 # Find minterms and dontcares
 width = labels.length
 for i in (0...(width*width))
-	term = rows[i / width][i % width]
-	if term == "1"
-		minterms << binary_string(binary_to_kmap_index(i, width), width) # Kmaps use greycode indexing as only one variable changes per adjacent cell
-	elsif term == "X"
-		dontcares << binary_string(binary_to_kmap_index(i, width), width) 
-	end
+	case rows[i / width][i % width]
+		when "1"
+			minterms
+		when "X"
+			dontcares
+	end << binary_string(binary_to_kmap_index(i, width), width)
 end 
 
 # Consolidate minterms
