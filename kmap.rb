@@ -141,15 +141,12 @@ for minterm in minterms
 	end
 end
 
-#puts "Essentials: #{essential_prime_implicants}"
-
 while minterms.length > 0 do
 	# Keep finding the biggest implicant, then remove it and the minterms it covers and try next
 	biggest_implicant = ""
 	biggest_implicant_size = 0
 
 	minterms_matched_by_implicant.each do |implicant, l_minterms|
-		#puts "Minterms matched by #{implicant}: #{l_minterms}"
 		if l_minterms.length > biggest_implicant_size then
 			biggest_implicant = implicant
 			biggest_implicant_size = l_minterms.length
@@ -159,12 +156,10 @@ while minterms.length > 0 do
 	# Use this one
 	essential_prime_implicants << biggest_implicant
 
-	#puts "Essentials: #{essential_prime_implicants}"
 	# Clear up implicant and terms covered by it
 	newly_covered_minterms = minterms_matched_by_implicant[biggest_implicant]
 	minterms -= newly_covered_minterms
 
-	#puts "Removing #{newly_covered_minterms}"
 	minterms_matched_by_implicant.select! {|implicant, minterms| minterms_matched_by_implicant[implicant] -= newly_covered_minterms; minterms_matched_by_implicant[implicant].length > 0}
 end
 
