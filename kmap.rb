@@ -137,21 +137,16 @@ for minterm in minterms
 		newly_covered_minterms = minterms_matched_by_implicant[implicants_for_minterm[minterm][0]]
 		essential_prime_implicants << implicants_for_minterm[minterm][0]
 		minterms -= newly_covered_minterms
-		minterms_matched_by_implicant.select! {|implicant, minterms| minterms_matched_by_implicant[implicant] -= newly_covered_minterms; minterms_matched_by_implicant[implicant].length > 0}
+		minterms_matched_by_implicant.select! do |implicant, minterms|
+			minterms_matched_by_implicant[implicant] -= newly_covered_minterms
+			minterms_matched_by_implicant[implicant].length > 0
+		end
 	end
 end
 
 while minterms.length > 0 do
 	# Keep finding the biggest implicant, then remove it and the minterms it covers and try next
-	biggest_implicant = ""
-	biggest_implicant_size = 0
-
-	minterms_matched_by_implicant.each do |implicant, l_minterms|
-		if l_minterms.length > biggest_implicant_size then
-			biggest_implicant = implicant
-			biggest_implicant_size = l_minterms.length
-		end
-	end
+	biggest_implicant, _ = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
 
 	# Use this one
 	essential_prime_implicants << biggest_implicant
@@ -160,7 +155,10 @@ while minterms.length > 0 do
 	newly_covered_minterms = minterms_matched_by_implicant[biggest_implicant]
 	minterms -= newly_covered_minterms
 
-	minterms_matched_by_implicant.select! {|implicant, minterms| minterms_matched_by_implicant[implicant] -= newly_covered_minterms; minterms_matched_by_implicant[implicant].length > 0}
+	minterms_matched_by_implicant.select! do |implicant, minterms|
+		minterms_matched_by_implicant[implicant] -= newly_covered_minterms
+		minterms_matched_by_implicant[implicant].length > 0
+	end
 end
 
 # Convert to sum-of-products representation
