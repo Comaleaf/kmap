@@ -92,8 +92,15 @@ def consolidate(minterms)
 	# Returns a consolidated word, and the count of how many bits had to be changed to get it 
 	def combine_words(a, b)
 		count = 0
-		word = a.chars.zip(b.chars).map {|c| if c[0] != c[1] then count += 1; '-' else c[0] end}
-		return word.join, count
+		
+		return a.chars.zip(b.chars).map do |c|
+			if c[0] != c[1] then
+				count += 1
+				'-'
+			else
+				c[0]
+			end
+		end.join, count
 	end
 
 	implicants = []
@@ -143,7 +150,9 @@ implicants_for_minterm        = {}
 for minterm in minterms
 	# A term is satisfied by an implicant if all their characters match or are ignored 
 	def satisfied_by(term, implicant) 
-		(term.each_char.each_with_index.map {|c, i| c == implicant[i] or implicant[i] == '-'}).all?
+		term.each_char.each_with_index.map do |c, i|
+			c == implicant[i] or implicant[i] == '-'
+		end.all?
 	end
 
 	for implicant in prime_implicants
