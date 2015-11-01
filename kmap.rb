@@ -150,7 +150,7 @@ implicants_for_minterm        = {}
 for minterm in minterms
 	# A term is satisfied by an implicant if all their characters match or are ignored 
 	def satisfied_by(term, implicant) 
-		term.each_char.each_with_index.map do |c, i|
+		term.chars.each_with_index.map do |c, i|
 			c == implicant[i] or implicant[i] == '-'
 		end.all?
 	end
@@ -208,7 +208,7 @@ end
 
 # Gives a product term from an implicant
 product_term = lambda do |term|
-	term.each_char.each_with_index.map do |c, i|
+	term.chars.each_with_index.map do |c, i|
 		if c == "0" then
 			"!" << labels[i]
 		elsif c == "1" then
