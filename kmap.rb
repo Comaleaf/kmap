@@ -26,8 +26,8 @@ for row in 0...rows.length
 		# The encoding can be considered as a single binary word where the half of bits are the greycode representation
 		# of the row, and the second half of the bits are the greycode representation of the column
 		term = ((greycode(row) << labels.length/2) + greycode(col))
-			.to_s(2)              # Convert to binary representation (base 2)
-			.rjust(labels.length) # Pad with leading zeros for the number of inputs
+			.to_s(2)                   # Convert to binary representation (base 2)
+			.rjust(labels.length, '0') # Pad with leading zeros for the number of inputs
 
 		case rows[row][col]
 			when "1"
@@ -38,51 +38,47 @@ for row in 0...rows.length
 	end
 end
 
-# Consolidate minterms
+# Quine-McCluskey: first step, consolidate minterms into largest groups
 def consolidate(minterms)
-	def changes(a, b)
-		change_count = 0
-		word = ""
-
-		for i in (0...a.length)
-			if a[i] != b[i] then
-				change_count += 1
-				word[i] = '-'
-			else
-				word[i] = a[i]
-			end
-		end
-
-		return word, change_count
+	# Returns a consolidated word, and the count of how many bits had to be changed to get it 
+	def combine_words(a, b)
+		count = 0
+		word = a.each_char.zip(b.each_char).map {|c| if c[0] != c[1] then count += 1; '-' else c[0] end}
+		return word.join, count
 	end
 
 	implicants = []
 
+	# For each minterm
 	for term in minterms
 		combined = false
 
+		# Attempt to combine with all other minterms
 		for comparing_term in (minterms - [term])
-			new_term, change_count = changes(term, comparing_term)
+			new_term, change_count = combine_words(term, comparing_term)
+
 			if change_count == 1 then
 				combined = true
 				implicants << new_term
 			end
 		end
 
+		# If no combination was succesful, the minterm must be added as an implicant as it cannot be combined further
 		if combined == false then
 			implicants << term
 		end
 	end
 
+	# Only give distinct implicants
 	return implicants.uniq
 end
 
+# For the purpose of minimisation we want to treat dontcares as minterms - they will then be removed later
 prime_implicants = minterms + dontcares
-new_implicants = []
 
-# Iteratively consolidate implicants until we are left with the prime implicants
-while (new_implicants = consolidate(prime_implicants)) != prime_implicants do
-	prime_implicants = new_implicants
+# Iteratively consolidate implicants until no more combinations can be made
+until (consolidate(prime_implicants) == prime_implicants) do
+	prime_implicants = consolidate(prime_implicants)
 end
 
 final_implicants = []
