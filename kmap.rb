@@ -119,7 +119,7 @@ for minterm in minterms
 	implicants_for_minterm[minterm] = []
 
 	for implicant in prime_implicants
-		minterms_matched_by_implicant[implicant] = [] unless minterms_matched_by_implicant[implicant].kind_of? Array
+		minterms_matched_by_implicant[implicant] ||= []
 
 		if test(minterm, implicant) then
 			implicants_for_minterm[minterm] << implicant
@@ -143,33 +143,29 @@ end
 
 while minterms.length > 0 do
 	# Keep finding the biggest implicant, then remove it and the minterms it covers and try next
-	biggest_implicant, newly_covered_minterms = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
+	implicant, terms = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
 
 	# Use this one
-	essential_prime_implicants << biggest_implicant
+	essential_prime_implicants << implicant
 
 	# Clear up implicant and terms covered by it
-	minterms -= newly_covered_minterms
+	minterms -= terms
 
 	minterms_matched_by_implicant.select! do |implicant, minterms|
-		minterms_matched_by_implicant[implicant] -= newly_covered_minterms
+		minterms_matched_by_implicant[implicant] -= terms
 		minterms_matched_by_implicant[implicant].length > 0
 	end
 end
 
 # Convert to sum-of-products representation
-product_term = lambda do |t|
-	output = ""
-
-	for i in (0...t.length)
-		if t[i] == "0" then
-			output << "!" << labels[i]
-		elsif t[i] == "1" then
-			output << labels[i]
+product_term = lambda do |term|
+	term.each_char.each_with_index.map do |c, i|
+		if c == "0" then
+			"!" << labels[i]
+		elsif c == "1" then
+			labels[i]
 		end
-	end
-
-	return output
+	end.join
 end
 
 puts essential_prime_implicants.uniq.map(&product_term).join(" + ")
