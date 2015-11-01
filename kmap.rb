@@ -99,44 +99,41 @@ while (new_implicants = consolidate(prime_implicants)) != prime_implicants do
 	prime_implicants = new_implicants
 end
 
-# Find essential prime implicants
-def test(term, implicant) 
-	for i in (0...term.length)
-		if term[i] != implicant[i] and implicant[i] != '-' then
-			return false
-		end
-	end
-
-	return true
-end
-
-essential_prime_implicants = []
+final_implicants = []
 minterms_matched_by_implicant = {}
 implicants_for_minterm = {}
 
 # Build table of minterms matched by implicants, and find essential prime implicants
 for minterm in minterms
-	implicants_for_minterm[minterm] = []
+	# A term is satisfied by an implicant if all their characters match or are ignored 
+	def satisfied_by(term, implicant) 
+		(term.each_char.each_with_index.map {|c, i| c == implicant[i] or implicant[i] == '-'}).all?
+	end
 
 	for implicant in prime_implicants
+		implicants_for_minterm[minterm] ||= []
 		minterms_matched_by_implicant[implicant] ||= []
 
-		if test(minterm, implicant) then
+		# If an implicant satisfies a term, put it into the prime implicant chart
+		if satisfied_by(minterm, implicant) then
 			implicants_for_minterm[minterm] << implicant
 			minterms_matched_by_implicant[implicant] << minterm
 		end
 	end
 end
 
-# Remove essentials
+# Remove essential prime implicants first as they will need to be removed anyway
 minterms.each do |minterm|
 	if implicants_for_minterm[minterm].length == 1 then
-		newly_covered_minterms = minterms_matched_by_implicant[implicants_for_minterm[minterm][0]]
-		essential_prime_implicants << implicants_for_minterm[minterm][0]
-		minterms -= newly_covered_minterms
-		minterms_matched_by_implicant.select! do |implicant, minterms|
-			minterms_matched_by_implicant[implicant] -= newly_covered_minterms
-			minterms_matched_by_implicant[implicant].length > 0
+		# This is an essential prime implicant, as it is the only implicant for a particular minterm
+		final_implicants << implicants_for_minterm[minterm].first
+		
+		# Remove any minterms matched by this implicant from the list of minterms remaining
+		terms = minterms_matched_by_implicant[final_implicants.last]
+		minterms -= terms
+		minterms_matched_by_implicant.select! do |implicant, _|
+			minterms_matched_by_implicant[implicant] -= terms
+			minterms_matched_by_implicant[implicant].length > 0 # Only retain implicants that still match minterms
 		end
 	end
 end
@@ -146,12 +143,12 @@ while minterms.length > 0 do
 	implicant, terms = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
 
 	# Use this one
-	essential_prime_implicants << implicant
+	final_implicants << implicant
 
 	# Clear up implicant and terms covered by it
 	minterms -= terms
 
-	minterms_matched_by_implicant.select! do |implicant, minterms|
+	minterms_matched_by_implicant.select! do |implicant, _|
 		minterms_matched_by_implicant[implicant] -= terms
 		minterms_matched_by_implicant[implicant].length > 0
 	end
@@ -168,4 +165,4 @@ product_term = lambda do |term|
 	end.join
 end
 
-puts essential_prime_implicants.uniq.map(&product_term).join(" + ")
+puts final_implicants.uniq.map(&product_term).join(" + ")
