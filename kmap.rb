@@ -177,6 +177,7 @@ minterms.each do |minterm|
 		terms = minterms_matched_by_implicant[final_implicants.last]
 		minterms -= terms
 		minterms_matched_by_implicant.select! do |implicant, _|
+			terms.each {|term| implicants_for_minterm[term] -= [implicant]}
 			minterms_matched_by_implicant[implicant] -= terms
 			minterms_matched_by_implicant[implicant].length > 0 # Only retain implicants that still match minterms
 		end
