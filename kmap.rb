@@ -71,10 +71,8 @@ for row in 0...rows.length
 			.rjust(labels.length, '0') # Pad with leading zeros for the number of inputs
 
 		case rows[row][col]
-			when "1"
-				minterms << term
-			when "X"
-				dontcares << term
+			when "1" then minterms << term
+			when "X" then dontcares << term
 		end
 	end
 end
@@ -210,10 +208,9 @@ end
 # Gives a product term from an implicant
 product_term = lambda do |term|
 	term.chars.each_with_index.map do |c, i|
-		if c == "0" then
-			"!" << labels[i]
-		elsif c == "1" then
-			labels[i]
+		case c
+			when "0" then "!" << labels[i]
+			when "1" then labels[i]
 		end
 	end.join
 end
