@@ -40,18 +40,17 @@ rows   = []
 abort("Must specify arguments") unless ARGV.length > 0
 
 # Labels seem fine
-labels = ARGV[0].split(//)
+labels = ARGV[0].chars
 
 abort("Labels must be unique")                  unless labels.uniq.length == labels.length
 abort("Column count does not match row length") unless (ARGV.length - 1) == ARGV[0].length
 
 # Rows seem fine
-rows = ARGV.drop(1).map {|r| r.upcase.split(//)}
+rows = ARGV.drop(1).map {|r| r.upcase.chars}
 
 ####################################################################################
 #
-# Step 2: Convert the Karnaugh Map to a Sum-of-Products for use with Quine-McCluskey
-#
+# Step 2: Convert the Karnaugh Map to a Sum-of-Products for use with Quine-McCluskey#
 minterms  = []
 dontcares = []
 
@@ -91,12 +90,12 @@ def consolidate(minterms)
 	def combine_words(a, b)
 		count = 0
 		
-		return a.chars.zip(b.chars).map do |c|
-			if c[0] != c[1] then
+		return a.chars.zip(b.chars).map do |(c1, c2)|
+			if c1 != c2 then
 				count += 1
 				'-'
 			else
-				c[0]
+				c1
 			end
 		end.join, count
 	end
@@ -185,7 +184,7 @@ end
 # Iteratively find the implicant that covers the most minterms and work on down until there are no minterms left
 while minterms.length > 0 do
 	# Keep finding the biggest implicant, then remove it and the minterms it covers and try next
-	implicant, terms = minterms_matched_by_implicant.max_by {|minterms| minterms.length}
+	implicant, terms = minterms_matched_by_implicant.max_by(&:length)
 
 	# Use this one
 	final_implicants << implicant
