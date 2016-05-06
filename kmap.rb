@@ -117,7 +117,7 @@ def consolidate(minterms)
 		end
 
 		# If no combination was succesful, the minterm must be added as an implicant as it cannot be combined further
-		if combined == false then
+		if not combined then
 			implicants << term
 		end
 	end
